@@ -1,5 +1,6 @@
 import pygame
 import random
+import math
 
 
 # Set up constants
@@ -168,6 +169,64 @@ class Unit(pygame.sprite.Sprite):
         if self.acceleration > self.max_speed:
             self.acceleration = self.max_speed
             self.accelerating = False
+
+    # used in the moveCloser method
+    def f(x, alpha, b):
+        return math.tan(alpha)*x + b
+
+    def moveCloser(self, unit, unit2):
+        circle1 = unit.pos
+        x1 = circle1[0]
+        y1 = circle1[1]
+        r1 = unit.radius
+        circle2 = unit2.pos
+        x2 = circle2[0]
+        y2 = circle2[1]
+        r2 = unit2.radius
+        r3 = self.radius
+        # distance between C1 and C2
+        distance = self.distance(circle1, circle2)
+        # angle
+        alpha = 90 - math.asin( (r2-r1) / distance )
+        # our middle point distance to first circle
+        AM = (distance + r1 - r2) / 2
+        # our middle point M = (xM, yM)
+        xM = x1 + (x2-x1) * AM/distance
+        yM = y1 + (y2-y1) * AM/distance
+        # the circle belongs to the line y = tan(alpha) + b
+        # determining b with M
+        b = yM - math.tan(alpha) * xM
+
+        # Equation for 1st circle. determining a, b and c (change b for be because already taken)
+        a = 1 + math.pow(math.tan(alpha), 2)
+        be = -2*x1 + 2*math.tan(alpha)*b - 2*math.tan(alpha)*y1
+        c = math.pow(x1, 2) - math.pow(r1+r3, 2) + math.pow(b, 2) - 2*b*y1 + math.pow(y1, 2)
+
+        delta = math.pow(be, 2) - 4*a*c
+
+        x3sol1 = None
+        x3sol2 = None
+        if delta > 0:
+            x3sol1 = (-be + math.sqrt(delta))/(2*a)
+            x3sol2 = (-be - math.sqrt(delta))/(2*a)
+
+        # Equation for 2nd circle
+        a = 1 + math.pow(math.tan(alpha), 2)
+        be = -2*x2 + 2*math.tan(alpha)*b - 2*math.tan(alpha)*y2
+        c = math.pow(x2, 2) - math.pow(r2+r3, 2) + math.pow(b, 2) - 2*b*y2 + math.pow(y2, 2)
+
+        delta = math.pow(be, 2) - 4*a*c
+
+        x3sol3 = None
+        x3sol4 = None
+        if delta > 0:
+            x3sol3 = (-be + math.sqrt(delta))/(2*a)
+            x3sol4 = (-be - math.sqrt(delta))/(2*a)
+
+        testCircles = []
+        for i in range(x3sol1, x3sol2, x3sol3, x3sol4):
+            if i is not None:
+                testCircles.append((i, self.f(i)))
 
 
 class SelectionRect(pygame.sprite.Sprite):

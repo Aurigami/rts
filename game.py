@@ -197,6 +197,7 @@ class Unit(pygame.sprite.Sprite):
         # determining b with M
         b = yM - math.tan(alpha) * xM
 
+        # We solve the equation so we get our circle to touch another circle (1st unit then 2nd unit)
         # Equation for 1st circle. determining a, b and c (change b for be because already taken)
         a = 1 + math.pow(math.tan(alpha), 2)
         be = -2*x1 + 2*math.tan(alpha)*b - 2*math.tan(alpha)*y1
@@ -223,10 +224,24 @@ class Unit(pygame.sprite.Sprite):
             x3sol3 = (-be + math.sqrt(delta))/(2*a)
             x3sol4 = (-be - math.sqrt(delta))/(2*a)
 
+
+        # 4 circles or less
         testCircles = []
         for i in range(x3sol1, x3sol2, x3sol3, x3sol4):
             if i is not None:
                 testCircles.append((i, self.f(i)))
+
+        # the circle we want is the one closer to our first circle (Not sure about that but let's try like that)
+        candidate = None
+        for circle in testCircles:
+            if candidate == None:
+                candidate = circle
+            elif (self.distance(self.pos, candidate) < self.distance(self.pos, circle)):
+                candidate = circle
+
+        if candidate is not None:
+            self.pos = candidate
+
 
 
 class SelectionRect(pygame.sprite.Sprite):

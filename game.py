@@ -80,6 +80,25 @@ class Unit(pygame.sprite.Sprite):
             collision = True
         return collision
 
+    def collideCircles(self, circle1, circle2):
+        collision = False
+        if self.distance(circle1, circle2) < circle1[2] + circle2[2]:
+            collision = True
+        return collision
+
+    # get a and b from the line y=ax+b created by the 2 points
+    def get_line_from_two_points(self, point1, point2):
+        x1 = point1[0]
+        y1 = point1[1]
+        x2 = point2[0]
+        y2 = point2[1]
+        if x1 == x2:
+            return None
+        else:
+            a = (y2-y1)/(x2-x1)
+            b = y1 - a * x1
+            return (a, b)
+
     def vectorCollision(self, unit):
         # A = self, B = unit
         vector_unit_to_self = pygame.math.Vector2(self.pos[0] - unit.pos[0], self.pos[1] - unit.pos[1])
@@ -171,28 +190,42 @@ class Unit(pygame.sprite.Sprite):
             self.accelerating = False
 
     # used in the moveCloser method
-    def f(x, alpha, b):
+    def f(self, x, alpha, b):
         return math.tan(alpha)*x + b
 
-    def moveCloser(self, unit, unit2):
-        circle1 = unit.pos
+    # circle = (x, y, radius)
+    # return 4 candidates
+    def targetMoveCloser(self, circle1, circle2):
         x1 = circle1[0]
         y1 = circle1[1]
-        r1 = unit.radius
-        circle2 = unit2.pos
+        r1 = circle1[2]
         x2 = circle2[0]
         y2 = circle2[1]
-        r2 = unit2.radius
+        r2 = circle2[2]
         r3 = self.radius
+
         # distance between C1 and C2
         distance = self.distance(circle1, circle2)
+
+        if distance > 4*r3:
+            print("todo make the algorithm to get the circle inside")
+        if distance == 0:
+            print("error :")
+            print(circle1)
+            print(circle2)
+            print(self.target, self.radius)
+
+        # get the relative angle between c1 and c2
+        rel_alpha = math.atan2(y2-y1, x2-x1)
+
         # angle
-        alpha = 90 - math.asin( (r2-r1) / distance )
+        alpha =  rel_alpha + math.pi/2 + math.asin( (r2-r1) / distance )
         # our middle point distance to first circle
         AM = (distance + r1 - r2) / 2
         # our middle point M = (xM, yM)
-        xM = x1 + (x2-x1) * AM/distance
-        yM = y1 + (y2-y1) * AM/distance
+        xM = x1 + (x2-x1) * AM / distance
+        yM = y1 + (y2-y1) * AM / distance
+
         # the circle belongs to the line y = tan(alpha) + b
         # determining b with M
         b = yM - math.tan(alpha) * xM
@@ -207,7 +240,7 @@ class Unit(pygame.sprite.Sprite):
 
         x3sol1 = None
         x3sol2 = None
-        if delta > 0:
+        if delta >= 0:
             x3sol1 = (-be + math.sqrt(delta))/(2*a)
             x3sol2 = (-be - math.sqrt(delta))/(2*a)
 
@@ -220,27 +253,18 @@ class Unit(pygame.sprite.Sprite):
 
         x3sol3 = None
         x3sol4 = None
-        if delta > 0:
+        if delta >= 0:
             x3sol3 = (-be + math.sqrt(delta))/(2*a)
             x3sol4 = (-be - math.sqrt(delta))/(2*a)
 
 
         # 4 circles or less
-        testCircles = []
-        for i in range(x3sol1, x3sol2, x3sol3, x3sol4):
+        candidates = []
+        for i in (x3sol1, x3sol2, x3sol3, x3sol4):
             if i is not None:
-                testCircles.append((i, self.f(i)))
+                candidates.append((i, self.f(i, alpha, b), r3))
 
-        # the circle we want is the one closer to our first circle (Not sure about that but let's try like that)
-        candidate = None
-        for circle in testCircles:
-            if candidate == None:
-                candidate = circle
-            elif (self.distance(self.pos, candidate) < self.distance(self.pos, circle)):
-                candidate = circle
-
-        if candidate is not None:
-            self.pos = candidate
+        return candidates
 
 
 
@@ -410,7 +434,7 @@ while running:
                     for unit in selected_units:
                         averageX += unit.pos[0]
                         averageY += unit.pos[1]
-                        unit.target = pygame.mouse.get_pos() # give a visible target position to all selected units
+                        # unit.visibleTarget = pygame.mouse.get_pos() # give a visible target position to all selected units
                     averageX /= len(selected_units)
                     averageY /= len(selected_units)
                     middleground_point = (averageX, averageY)
@@ -420,7 +444,99 @@ while running:
                     selected_units.empty()  # Clear the group
                     for unit in sorted_units:
                         selected_units.add(unit)  # Add the circles back to the group in the sorted order
+                        unit.target = unit.pos # set their target to their pos
+                    sorted_units = []
+                    # change the target of every unit closer to the middleground point
+                    i=0 # keep track of how many circles are in the list
+                    circle_list = [] # keep track of every circle
+                    for unit in selected_units:
+                        # if it's the first unit, put it at the middleground point
+                        if i==0:
+                            # todo to improve
+                            unit.target = middleground_point
+                            firstCircle = (middleground_point[0], middleground_point[1], unit.radius)
+                        # if it's the second one, put it right next to the first one
+                        elif i==1:
+                            # todo to improve
+                            # would love to use a better algorithm later (but this would make the trick)
+                            # make circles closer to each other five times, but cancel it if they collide
+                            testUnit1 = Unit((firstCircle[0], firstCircle[1]))
+                            testUnit1.radius = firstCircle[2]
+                            for j in range(10):
+                                testPos = ((firstCircle[0] + unit.target[0])/2, (firstCircle[1] + unit.target[1])/2)
+                                testUnit2 = Unit(testPos)
+                                if not testUnit1.collideunit(testUnit2):
+                                    unit.target = testPos
+                        # else, take the 2 closer units and put it next to them
+                        elif i>=2:
+                            circle1 = tuple(circle_list[0])
+                            circle2 = tuple(circle_list[1])
+                            # find the 2 closer circles in the list and put the closer one in circle1
+                            for j in range(2, i):
+                                c1 = tuple(circle1)
+                                c2 = tuple(circle2)
+                                c3 = tuple(circle_list[j])
 
+                                # Calculate distances from unit.target to circle1 and circle2
+                                d1 = unit.distance(unit.target, c1)
+                                d2 = unit.distance(unit.target, c2)
+                                # Update circle1 and circle2 if the new_circle is closer
+                                d3 = unit.distance(unit.target, c3)
+
+                                # Compare d1 with d2 and d3 to find the smallest value
+                                if d1 < d2 and d1 < d3:
+                                    circle1 = tuple(c1)
+                                    if d2 < d3:
+                                        circle2 = tuple(c2)
+                                    else:
+                                        circle2 = tuple(c3)
+                                elif d2 < d1 and d2 < d3:
+                                    circle1 = tuple(c2)
+                                    if d1 < d3:
+                                        circle2 = tuple(c1)
+                                    else:
+                                        circle2 = tuple(c3)
+                                else:
+                                    circle1 = tuple(c3)
+                                    if d1 < d2:
+                                        circle2 = tuple(c1)
+                                    else:
+                                        circle2 = tuple(c2)
+
+                            # get the 4 candidates
+                            candidates = unit.targetMoveCloser(circle1, circle2)
+
+                            # add all circles that doesn't collide in new_candidates
+                            new_candidates = []
+                            for candidate in candidates:
+                                collision = False
+                                for circle in circle_list:
+                                    if unit.collideCircles(circle, candidate):
+                                        collision = True
+                                if not collision:
+                                    new_candidates.append(candidate)
+                            # if we don't have a new circle then don't change anything
+                            new_circle = (unit.target[0], unit.target[1], unit.radius)
+                            # else take the closer one
+                            if not new_candidates == []:
+                                candidate = None
+                                for circle in new_candidates:
+                                    if candidate == None:
+                                        candidate = circle
+                                    elif (unit.distance(unit.target, candidate) < unit.distance(unit.target, circle)):
+                                        candidate = circle
+
+                                if candidate is not None:
+                                    new_circle = candidate
+                            else:
+                                print("No place available for a circle")
+                                # todo handle this case
+
+                            unit.target = (new_circle[0], new_circle[1])
+
+                        # keep track of every circle
+                        circle_list.append((unit.target[0], unit.target[1], unit.radius))
+                        i += 1
 
 
     # Show and update the target cursors

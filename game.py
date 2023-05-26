@@ -3,6 +3,7 @@ import random
 import math
 from constants import *
 from Unit import Unit
+from SelectionRect import SelectionRect
 
 # Set up Pygame
 pygame.init()
@@ -10,22 +11,6 @@ screen = pygame.display.set_mode(WINDOW_SIZE)
 pygame.display.set_caption("RTS Game")
 clock = pygame.time.Clock()
 FPS = 60
-
-class SelectionRect(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        self.start_pos = (0, 0)
-        self.image = pygame.Surface((0, 0))
-        self.rect = self.image.get_rect()
-
-    def update(self, start_pos, end_pos):
-        self.start_pos = start_pos
-        self.image = pygame.Surface((abs(end_pos[0] - start_pos[0]), abs(end_pos[1] - start_pos[1])))
-        self.rect = self.image.get_rect()
-        self.rect.x, self.rect.y = min(start_pos[0], end_pos[0]), min(start_pos[1], end_pos[1])
-
-    def update_end_pos(self, end_pos):
-        self.update(self.start_pos, end_pos)
 
 class TargetCursor(pygame.sprite.Sprite):
     # TODO: cursor stops when any unit stop (shouldn't be that way)

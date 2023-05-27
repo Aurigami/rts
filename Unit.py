@@ -1,5 +1,6 @@
 import pygame
 import math
+from Circle import Circle
 from constants import *
 
 class Unit(pygame.sprite.Sprite):
@@ -43,6 +44,7 @@ class Unit(pygame.sprite.Sprite):
     def update(self):
         self.rect.center = self.pos
 
+    # to remove for circle
     # Distance between two points A and B
     def distance(self, A, B):
         vector_distance = pygame.math.Vector2(B[0] - A[0], B[1] - A[1])
@@ -59,6 +61,7 @@ class Unit(pygame.sprite.Sprite):
             collision = True
         return collision
 
+    # to remove for circle
     def collideCircles(self, circle1, circle2):
         collision = False
         if self.distance(circle1, circle2) < circle1[2] + circle2[2]:
@@ -175,16 +178,16 @@ class Unit(pygame.sprite.Sprite):
     # circle = (x, y, radius)
     # return 4 candidates
     def targetMoveCloser(self, circle1, circle2):
-        x1 = circle1[0]
-        y1 = circle1[1]
-        r1 = circle1[2]
-        x2 = circle2[0]
-        y2 = circle2[1]
-        r2 = circle2[2]
+        x1 = circle1.x
+        y1 = circle1.y
+        r1 = circle1.r
+        x2 = circle2.x
+        y2 = circle2.y
+        r2 = circle2.r
         r3 = self.radius
 
         # distance between C1 and C2
-        distance = self.distance(circle1, circle2)
+        distance = circle1.distance(circle2)
 
         if distance > 4*r3:
             print("todo make the algorithm to get the circle inside")
@@ -241,6 +244,6 @@ class Unit(pygame.sprite.Sprite):
         candidates = []
         for i in (x3sol1, x3sol2, x3sol3, x3sol4):
             if i is not None:
-                candidates.append((i, self.f(i, alpha, b), r3))
+                candidates.append(Circle(i, self.f(i, alpha, b), r3))
 
         return candidates

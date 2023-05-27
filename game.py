@@ -2,6 +2,7 @@ import pygame
 import random
 import math
 from constants import *
+from Circle import Circle
 from Unit import Unit
 from SelectionRect import SelectionRect
 from TargetCursor import TargetCursor
@@ -158,54 +159,54 @@ while running:
                         if i==0:
                             # todo to improve
                             unit.target = middleground_point
-                            firstCircle = (middleground_point[0], middleground_point[1], unit.radius)
+                            firstCircle = Circle(middleground_point[0], middleground_point[1], unit.radius)
                         # if it's the second one, put it right next to the first one
                         elif i==1:
                             # todo to improve
                             # would love to use a better algorithm later (but this would make the trick)
                             # make circles closer to each other five times, but cancel it if they collide
-                            testUnit1 = Unit((firstCircle[0], firstCircle[1]))
-                            testUnit1.radius = firstCircle[2]
+                            testUnit1 = Unit((firstCircle.x, firstCircle.y))
+                            testUnit1.radius = firstCircle.r
                             for j in range(10):
-                                testPos = ((firstCircle[0] + unit.target[0])/2, (firstCircle[1] + unit.target[1])/2)
+                                testPos = ((firstCircle.x + unit.target[0])/2, (firstCircle.y + unit.target[1])/2)
                                 testUnit2 = Unit(testPos)
                                 if not testUnit1.collideunit(testUnit2):
                                     unit.target = testPos
                         # else, take the 2 closer units and put it next to them
                         elif i>=2:
-                            circle1 = tuple(circle_list[0])
-                            circle2 = tuple(circle_list[1])
+                            circle1 = circle_list[0]
+                            circle2 = circle_list[1]
                             # find the 2 closer circles in the list and put the closer one in circle1
                             for j in range(2, i):
-                                c1 = tuple(circle1)
-                                c2 = tuple(circle2)
-                                c3 = tuple(circle_list[j])
+                                c1 = circle1
+                                c2 = circle2
+                                c3 = circle_list[j]
 
                                 # Calculate distances from unit.target to circle1 and circle2
-                                d1 = unit.distance(unit.target, c1)
-                                d2 = unit.distance(unit.target, c2)
+                                d1 = unit.distance(unit.target, c1.pos())
+                                d2 = unit.distance(unit.target, c2.pos())
                                 # Update circle1 and circle2 if the new_circle is closer
-                                d3 = unit.distance(unit.target, c3)
+                                d3 = unit.distance(unit.target, c3.pos())
 
                                 # Compare d1 with d2 and d3 to find the smallest value
                                 if d1 < d2 and d1 < d3:
-                                    circle1 = tuple(c1)
+                                    circle1 = c1
                                     if d2 < d3:
-                                        circle2 = tuple(c2)
+                                        circle2 = c2
                                     else:
-                                        circle2 = tuple(c3)
+                                        circle2 = c3
                                 elif d2 < d1 and d2 < d3:
-                                    circle1 = tuple(c2)
+                                    circle1 = c2
                                     if d1 < d3:
-                                        circle2 = tuple(c1)
+                                        circle2 = c1
                                     else:
-                                        circle2 = tuple(c3)
+                                        circle2 = c3
                                 else:
-                                    circle1 = tuple(c3)
+                                    circle1 = c3
                                     if d1 < d2:
-                                        circle2 = tuple(c1)
+                                        circle2 = c1
                                     else:
-                                        circle2 = tuple(c2)
+                                        circle2 = c2
 
                             # get the 4 candidates
                             candidates = unit.targetMoveCloser(circle1, circle2)
@@ -215,19 +216,19 @@ while running:
                             for candidate in candidates:
                                 collision = False
                                 for circle in circle_list:
-                                    if unit.collideCircles(circle, candidate):
+                                    if circle.collide(candidate):
                                         collision = True
                                 if not collision:
                                     new_candidates.append(candidate)
                             # if we don't have a new circle then don't change anything
-                            new_circle = (unit.target[0], unit.target[1], unit.radius)
+                            new_circle = Circle(unit.target[0], unit.target[1], unit.radius)
                             # else take the closer one
                             if not new_candidates == []:
                                 candidate = None
                                 for circle in new_candidates:
                                     if candidate == None:
                                         candidate = circle
-                                    elif (unit.distance(unit.target, candidate) < unit.distance(unit.target, circle)):
+                                    elif candidate.distance(Circle(unit.target)) < circle.distance(Circle(unit.target)):
                                         candidate = circle
 
                                 if candidate is not None:
@@ -236,10 +237,10 @@ while running:
                                 print("No place available for a circle")
                                 # todo handle this case
 
-                            unit.target = (new_circle[0], new_circle[1])
+                            unit.target = (new_circle.x, new_circle.y)
 
                         # keep track of every circle
-                        circle_list.append((unit.target[0], unit.target[1], unit.radius))
+                        circle_list.append(Circle(unit.target[0], unit.target[1], unit.radius))
                         i += 1
 
                     # move all our units towards the mouse (that's what our middle ground point is used for)

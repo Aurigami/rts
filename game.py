@@ -158,20 +158,20 @@ while running:
                         # if it's the first unit, put it at the middleground point
                         if i==0:
                             # todo to improve
-                            unit.target = middleground_point
-                            firstCircle = Circle(middleground_point[0], middleground_point[1], unit.radius)
+                            # if only one unit, take it to the middleground_point
+                            if len(selected_units) == 1:
+                                unit.target = middleground_point
+                                firstCircle = Circle(middleground_point[0], middleground_point[1], unit.radius)
+                            else: #todo
+                                unit.target = middleground_point
+                                firstCircle = Circle(middleground_point[0], middleground_point[1], unit.radius)
                         # if it's the second one, put it right next to the first one
                         elif i==1:
                             # todo to improve
-                            # would love to use a better algorithm later (but this would make the trick)
-                            # make circles closer to each other five times, but cancel it if they collide
-                            testUnit1 = Unit((firstCircle.x, firstCircle.y))
-                            testUnit1.radius = firstCircle.r
-                            for j in range(10):
-                                testPos = ((firstCircle.x + unit.target[0])/2, (firstCircle.y + unit.target[1])/2)
-                                testUnit2 = Unit(testPos)
-                                if not testUnit1.collideunit(testUnit2):
-                                    unit.target = testPos
+                            # angle of two points
+                            theta = math.atan2(unit.target[1] - firstCircle.y, unit.target[0] - firstCircle.x)
+                            unit.target = (firstCircle.x + 2*firstCircle.r*math.cos(theta), firstCircle.y + 2*firstCircle.r*math.sin(theta))
+
                         # else, take the 2 closer units and put it next to them
                         elif i>=2:
                             circle1 = circle_list[0]

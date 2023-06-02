@@ -6,11 +6,12 @@ from Circle import Circle
 from Unit import Unit
 from SelectionRect import SelectionRect
 from TargetCursor import TargetCursor
+import Menu
 
 # Set up Pygame
 pygame.init()
 screen = pygame.display.set_mode(WINDOW_SIZE)
-pygame.display.set_caption("RTS Game")
+pygame.display.set_caption(GAME_NAME)
 clock = pygame.time.Clock()
 FPS = 60
 
@@ -248,6 +249,9 @@ while running:
                         diff_x = pygame.mouse.get_pos()[0] - middleground_point[0]
                         diff_y = pygame.mouse.get_pos()[1] - middleground_point[1]
                         unit.target = (unit.target[0] + diff_x, unit.target[1] + diff_y)
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                Menu.pause_menu.enable()
 
     # Show and update the target cursors
     # Re-initialize the cursor group
@@ -278,7 +282,8 @@ while running:
     if dragging:
         selection_rect.update_end_pos(pygame.mouse.get_pos())
         pygame.draw.rect(screen, SELECTION_COLOR, selection_rect, 1)
-
+    if Menu.pause_menu.is_enabled():
+        Menu.pause_menu.mainloop(screen, fps_limit=60)
     # Update the screen
     pygame.display.flip()
 

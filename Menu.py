@@ -1,6 +1,7 @@
 import pygame
 import pygame_menu
 from constants import *
+import configparser
 
 # Set up Pygame
 pygame.init()
@@ -14,13 +15,18 @@ def set_difficulty(value, difficulty):
     pass
 
 def set_graphics(value, new_window_size):
-    # todo
+    config = configparser.ConfigParser()
+
+    config['graphics'] = {'WidthWindowSize':new_window_size[0],'HeightWindowSize':new_window_size[1]}
+
+    # Write the INI file
+    with open('settings.ini', 'w') as configfile:
+        config.write(configfile)
     pass
 
 def start_the_game():
     pause_menu.enable()
     # Do the job here !
-    pass
 
 def resume():
     pause_menu.disable()

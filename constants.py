@@ -1,6 +1,20 @@
 # Set up constants
+# reading settings file
+
+import configparser
+
+config = configparser.ConfigParser()
+
+# Read the INI file
+config.read('settings.ini')
+
+# Access values from sections
+width = int(config['graphics']['WidthWindowSize'])
+height = int(config['graphics']['HeightWindowSize'])
+
+
 GAME_NAME = "RTS Game"
-WINDOW_SIZE = (1280, 720)
+WINDOW_SIZE = (width, height) # using the config file to get our window size
 GRID_SIZE = (80, 60)
 CELL_SIZE = (WINDOW_SIZE[0] // GRID_SIZE[0], WINDOW_SIZE[1] // GRID_SIZE[1])
 UNIT_SIZE = (WINDOW_SIZE[0] // 28, WINDOW_SIZE[0] // 28) # in theory WINDOW_SIZE[1] // 21, but let's stay consistent

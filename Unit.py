@@ -6,11 +6,12 @@ from constants import *
 class Unit(pygame.sprite.Sprite):
     def __init__(self, pos):
         super().__init__()
-
         # Surface edit
-        self.image = pygame.Surface(UNIT_SIZE, pygame.SRCALPHA)
+        self.image = pygame.Surface(SPRITE_SIZE, pygame.SRCALPHA)
         self.rect = self.image.get_rect()
-        self.rect.center = pos # position used in unic logic. pos = (x, y). updates every frame
+        self.rect.center = pos
+        self.sprite_radius = SPRITE_SIZE[0]/2
+
         # Circle
         self.radius = UNIT_SIZE[0]/2
         self.image.fill(TRANSPARENT)
@@ -18,12 +19,12 @@ class Unit(pygame.sprite.Sprite):
 
         # Unit logic
         # Static variables (don't change when created, or rarely. Probably in the help guide)
-        self.max_speed = 5.0
-        self.max_acceleration = 0.2
+        self.max_speed = STANDARD_SIZE # 5.0
+        self.max_acceleration = STANDARD_SIZE / 25 # 0.2
         self.size = UNIT_SIZE
         self.weight = UNIT_SIZE[0] // 2
         # Ever moving variables (changes all the time)
-        self.pos = pos
+        self.pos = pos # position used in unic logic. pos = (x, y). updates every frame
         self.speed = (0, 0)
         self.acceleration = 0
         self.accelerating = True # Keep track of wheter or not the unit is accelerating or decelerating
@@ -33,16 +34,16 @@ class Unit(pygame.sprite.Sprite):
 
 
     def select(self):
-        pygame.draw.circle(self.image, UNIT_SELECTED_COLOR, (self.radius, self.radius), self.radius, 4)
+        pygame.draw.circle(self.image, UNIT_SELECTED_COLOR, (self.sprite_radius, self.sprite_radius), self.sprite_radius, 4)
 
     def unselect(self):
-        pygame.draw.circle(self.image, UNIT_UNSELECTED_COLOR, (self.radius, self.radius), self.radius, 4)
+        pygame.draw.circle(self.image, UNIT_UNSELECTED_COLOR, (self.sprite_radius, self.sprite_radius), self.sprite_radius, 4)
 
     def move_to(self, pos):
         self.target = pos
 
     def update(self):
-        self.rect.center = self.pos
+        self.rect.center = (self.pos[0] * WIDTH_RATIO, self.pos[1] * HEIGHT_RATIO)
 
     # to remove for circle
     # Distance between two points A and B
@@ -247,3 +248,6 @@ class Unit(pygame.sprite.Sprite):
                 candidates.append(Circle(i, self.f(i, alpha, b), r3))
 
         return candidates
+
+    def collidepoint(self, point):
+        return self.distance(self.pos, point) <= self.radius

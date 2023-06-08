@@ -10,7 +10,7 @@ import Menu
 
 # Set up Pygame
 pygame.init()
-screen = pygame.display.set_mode(WINDOW_SIZE)
+screen = pygame.display.set_mode(SCREEN_SIZE)
 pygame.display.set_caption(GAME_NAME)
 clock = pygame.time.Clock()
 FPS = 60
@@ -30,6 +30,11 @@ for i in range(50):
     units.add(unit)
 
 # Define helper functions
+def mouse_pos():
+    x = pygame.mouse.get_pos()[0] / WIDTH_RATIO
+    y = pygame.mouse.get_pos()[1] / HEIGHT_RATIO
+    return (x, y)
+
 # def get_unit_under_mouse(pos):
 #     for unit in units:
 #         if unit.rect.collidepoint(pos):
@@ -39,7 +44,6 @@ for i in range(50):
 # Set up game loop
 running = True
 dragging = False
-drag_start_pos = None
 
 while running:
     # Handle Game logic
@@ -98,25 +102,23 @@ while running:
             if event.button == 1:
                 # Left mouse button down
                 dragging = True
-                drag_start_pos = pygame.mouse.get_pos()
-                selection_rect.update(drag_start_pos, drag_start_pos)
+                selection_rect.start_pos = mouse_pos()
 
         elif event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1:
                 # Left mouse button up
-                for unit in units:
-                    unit.unselect()
 
                 dragging = False
-                drag_start_pos = None
-                drag_end_pos = None
+
+                for unit in units:
+                    unit.unselect()
 
                 if not pygame.key.get_pressed()[pygame.K_LSHIFT]:
                     selected_units = pygame.sprite.Group()
 
                 # Check if a unit is selected
                 for unit in units:
-                    if unit.rect.collidepoint(pygame.mouse.get_pos()):
+                    if unit.collidepoint(mouse_pos()):
                         if unit not in selected_units:
                             selected_units.add(unit)
 
@@ -246,8 +248,8 @@ while running:
 
                     # move all our units towards the mouse (that's what our middle ground point is used for)
                     for unit in selected_units:
-                        diff_x = pygame.mouse.get_pos()[0] - middleground_point[0]
-                        diff_y = pygame.mouse.get_pos()[1] - middleground_point[1]
+                        diff_x = mouse_pos()[0] - middleground_point[0]
+                        diff_y = mouse_pos()[1] - middleground_point[1]
                         unit.target = (unit.target[0] + diff_x, unit.target[1] + diff_y)
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
@@ -280,7 +282,7 @@ while running:
 
     # Draw selection rectangle
     if dragging:
-        selection_rect.update_end_pos(pygame.mouse.get_pos())
+        selection_rect.update_end_pos(mouse_pos())
         pygame.draw.rect(screen, SELECTION_COLOR, selection_rect, 1)
     if Menu.pause_menu.is_enabled():
         Menu.pause_menu.mainloop(screen, fps_limit=60)

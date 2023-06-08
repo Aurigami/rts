@@ -7,17 +7,17 @@ class TargetCursor(pygame.sprite.Sprite):
     # TODO: Cursor shows up ONLY when the unit is selected (to see where it goes)
     def __init__(self):
         super().__init__()
-        self.size = (UNIT_SIZE[0] // 1.3, UNIT_SIZE[0] // 1.3)
+        self.size = (SPRITE_SIZE[0] // 1.3, SPRITE_SIZE[0] // 1.3)
         self.pos = (0, 0)
         self.image = pygame.Surface(self.size, pygame.SRCALPHA)
         self.rect = self.image.get_rect()
         self.rect.center = (0, 0)
-        self.radius = UNIT_SIZE[0] // 2.6
+        self.radius = SPRITE_SIZE[0] // 2.6
         # self.visible = False
         self.target = None
 
     def show(self):
-        self.rect.center = self.target
+        self.rect.center = (self.target[0] * WIDTH_RATIO, self.target[1] * HEIGHT_RATIO)
         pygame.draw.circle(self.image, TARGET_CURSOR_MOVE_COLOR, (self.radius, self.radius), self.radius)
         # target_cursor.visible = True
 

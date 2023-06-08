@@ -5,7 +5,7 @@ import configparser
 
 # Set up Pygame
 pygame.init()
-screen = pygame.display.set_mode(WINDOW_SIZE)
+screen = pygame.display.set_mode(SCREEN_SIZE)
 pygame.display.set_caption(GAME_NAME)
 clock = pygame.time.Clock()
 FPS = 60
@@ -34,11 +34,11 @@ def resume():
 def disabled():
     pause_menu.disable()
 
-pause_menu = pygame_menu.Menu('Menu', WINDOW_SIZE[0], WINDOW_SIZE[1], theme=pygame_menu.themes.THEME_DARK)
+pause_menu = pygame_menu.Menu('Menu', SCREEN_SIZE[0], SCREEN_SIZE[1], theme=pygame_menu.themes.THEME_DARK)
 
-options_menu = pygame_menu.Menu('Options', WINDOW_SIZE[0], WINDOW_SIZE[1], theme=pygame_menu.themes.THEME_DARK)
+options_menu = pygame_menu.Menu('Options', SCREEN_SIZE[0], SCREEN_SIZE[1], theme=pygame_menu.themes.THEME_DARK)
 
-graphical_options_menu = pygame_menu.Menu('Options', WINDOW_SIZE[0], WINDOW_SIZE[1], theme=pygame_menu.themes.THEME_DARK)
+graphical_options_menu = pygame_menu.Menu('Options', SCREEN_SIZE[0], SCREEN_SIZE[1], theme=pygame_menu.themes.THEME_DARK)
 
 # menu.add.text_input('Name :', default='John Doe')
 # menu.add.selector('Difficulty :', [('Hard', 1), ('Easy', 2)], onchange=set_difficulty)

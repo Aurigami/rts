@@ -16,11 +16,13 @@ def set_difficulty(value, difficulty):
 
 def set_graphics(value, new_window_size):
     config = configparser.ConfigParser()
+    config.read('settings.ini', encoding='utf-8')
 
-    config['graphics'] = {'WidthWindowSize':new_window_size[0],'HeightWindowSize':new_window_size[1]}
+    config['graphics']['WidthWindowSize'] = str(new_window_size[0])
+    config['graphics']['HeightWindowSize'] = str(new_window_size[1])
 
     # Write the INI file
-    with open('settings.ini', 'w') as configfile:
+    with open('settings.ini', 'w', encoding='utf-8') as configfile:
         config.write(configfile)
     pass
 

@@ -255,10 +255,27 @@ while running:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 Menu.pause_menu.enable()
+            elif event.key == pygame.K_UP:
+                camera.scrollingUp = True
             elif event.key == pygame.K_RIGHT:
-                camera.x += 100
+                camera.scrollingRight = True
+            elif event.key == pygame.K_DOWN:
+                camera.scrollingDown = True
             elif event.key == pygame.K_LEFT:
-                camera.x -= 100
+                camera.scrollingLeft = True
+
+        elif event.type == pygame.KEYUP:
+            if event.key == pygame.K_UP:
+                camera.scrollingUp = False
+            elif event.key == pygame.K_RIGHT:
+                camera.scrollingRight = False
+            elif event.key == pygame.K_DOWN:
+                camera.scrollingDown = False
+            elif event.key == pygame.K_LEFT:
+                camera.scrollingLeft = False
+
+    # updating the camera
+    camera.scroll()
 
     # Show and update the target cursors
     # Re-initialize the cursor group

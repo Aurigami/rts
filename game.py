@@ -6,6 +6,7 @@ from Circle import Circle
 from Unit import Unit
 from SelectionRect import SelectionRect
 from TargetCursor import TargetCursor
+from Camera import Camera
 import Menu
 
 # Set up Pygame
@@ -16,17 +17,16 @@ clock = pygame.time.Clock()
 FPS = 60
 
 # Set up game objects
-all_sprites = pygame.sprite.Group()
 units = pygame.sprite.Group()
 selection_rect = SelectionRect()
 selected_units = pygame.sprite.Group()
+camera = Camera(0, 0)
 
 
 for i in range(50):
     x = random.randint(0, WINDOW_SIZE[0])
     y = random.randint(0, WINDOW_SIZE[1])
     unit = Unit((x, y))
-    all_sprites.add(unit)
     units.add(unit)
 
 # Define helper functions
@@ -118,7 +118,7 @@ while running:
 
                 # Check if a unit is selected
                 for unit in units:
-                    if unit.collidepoint(mouse_pos()):
+                    if unit.collidepoint((mouse_pos()[0] + camera.x, mouse_pos()[1] + camera.y)):
                         if unit not in selected_units:
                             selected_units.add(unit)
 
@@ -247,13 +247,18 @@ while running:
                         i += 1
 
                     # move all our units towards the mouse (that's what our middle ground point is used for)
+                    # add the camera to the equation
                     for unit in selected_units:
-                        diff_x = mouse_pos()[0] - middleground_point[0]
-                        diff_y = mouse_pos()[1] - middleground_point[1]
+                        diff_x = mouse_pos()[0] - middleground_point[0] + camera.x
+                        diff_y = mouse_pos()[1] - middleground_point[1] + camera.y
                         unit.target = (unit.target[0] + diff_x, unit.target[1] + diff_y)
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 Menu.pause_menu.enable()
+            elif event.key == pygame.K_RIGHT:
+                camera.x += 100
+            elif event.key == pygame.K_LEFT:
+                camera.x -= 100
 
     # Show and update the target cursors
     # Re-initialize the cursor group
@@ -267,17 +272,17 @@ while running:
     # Make a target cursor for each selected unit and prepare them to be displayed
     for target in target_list:
         target_cursor = TargetCursor()
-        target_cursor.target = target
+        target_cursor.target = (target[0] - camera.x, target[1] - camera.y)
         target_cursor.show()
         target_cursors.add(target_cursor)
 
     # Update all sprites
-    all_sprites.update()
+    units.update(camera)
 
     # Draw everything
     screen.fill(BACKGROUND_COLOR)
     target_cursors.draw(screen)
-    all_sprites.draw(screen)
+    units.draw(screen)
 
 
     # Draw selection rectangle

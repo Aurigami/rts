@@ -42,8 +42,8 @@ class Unit(pygame.sprite.Sprite):
     def move_to(self, pos):
         self.target = pos
 
-    def update(self):
-        self.rect.center = (self.pos[0] * WIDTH_RATIO, self.pos[1] * HEIGHT_RATIO)
+    def update(self, camera):
+        self.rect.center = (self.pos[0] * WIDTH_RATIO - camera.x, self.pos[1] * HEIGHT_RATIO - camera.y)
 
     # to remove for circle
     # Distance between two points A and B
